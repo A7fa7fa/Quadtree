@@ -1,5 +1,3 @@
-#from flocking.const.constants import HEIGHT, WIDTH
-#from flocking.const.constants import HEIGHT, WIDTH
 import p5
 from p5.core.constants import CENTER
 from p5.core.font import text
@@ -84,7 +82,8 @@ class Quadtree():
 
 			self.children = False
 
-			self.inter = False
+			# draw intersected segment in a diff collour
+			self.intersects = False
 
 
 		def insert(self, point:Point):
@@ -188,10 +187,10 @@ class Quadtree():
 
 		def intersectsRectangle(self, x, y, range):
 			# return true if center is inside of segment
-			self.inter = False
+			self.intersects = False
 			if self.isInside(Point(x, y)): 
 				#print('center is inside')
-				self.inter = True
+				self.intersects = True
 				return True
 
 			# return false if rectangle is outside of segment
@@ -199,13 +198,13 @@ class Quadtree():
 				or (self.x  - self.width >= x + range)
 				or (self.y + self.height <= y - range)
 				or self.y - self.height >= y + range):
-				self.inter = False
+				self.intersects = False
 				return False
 			
 			# else rectangle overlapps
 			else: 
 				#print('overlaps')
-				self.inter = True
+				self.intersects = True
 				return True
 		
 		def pointsInsideRectangle(self, x, y, range):
@@ -224,10 +223,10 @@ class Quadtree():
 			# draws points and segments
 			p5.stroke(0, 255, 100)
 			p5.stroke_weight(1)
-			if self.inter:
+			if self.intersects:
 				p5.stroke_weight(5)
 				p5.stroke(255,0,0)
-				self.inter = False
+				self.intersects = False
 				
 			p5.no_fill()
 			#p5.rect(self.x, self.y, self.width * 2 - 10, self.height * 2 - 10, mode = CENTER)
@@ -293,11 +292,6 @@ def draw():
 			y = p5.random_uniform(-30, 30)- (HEIGHT /2)
 			qtree.insert(mouse_x + x, mouse_y + y)
 
-	#print('show over')
 
-#p5.run(frame_rate = 30)
 if __name__ == '__main__':
 	p5.run(frame_rate=20)
-#p5.run(frame_rate = 30)
-
-

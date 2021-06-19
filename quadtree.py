@@ -117,13 +117,13 @@ class Quadtree():
 
 
 
-		def addPoint(self, point:Point):
+		def addPoint(self, point:Point) -> bool:
 			# add point to segment
 			self.points.append(point)
 			return True
 			
 
-		def insertIntoChildren(self, point:Point):
+		def insertIntoChildren(self, point:Point) -> bool:
 			# insert point into childsegment
 			# returns True if point is inside of bounds of child
 			# else False and next child is checked
@@ -140,12 +140,12 @@ class Quadtree():
 				return False
 
 
-		def hasCapacity(self):
+		def hasCapacity(self) -> bool:
 			# returns true if segment has capacity to add points to
 			return len(self.points) < self.capacity
 
 
-		def isInside(self, point):
+		def isInside(self, point) -> bool:
 			# returns true if point is inside of boundary of this segment
 			# favours East Segment if x position of point is on x boundary
 			# favours south Segment if y position of point is on y boundary
@@ -164,7 +164,8 @@ class Quadtree():
 			self.children = True
 			#print('children created')
 
-		def query(self, x, y, range, mode = 'Rectangle'):
+		def query(self, x, y, range, mode = 'Rectangle') -> list:
+			# returns list of intersected points
 			points = []
 			if mode == 'Rectangle':
 				
@@ -174,11 +175,16 @@ class Quadtree():
 					return points
 				else:
 					if self.children == True:
+						# if children exists call recursice query of childsegment and add result list to this result list 
 						points += self.upWest.query(x, y, range, mode = mode)
 						points += self.upEast.query(x, y, range, mode = mode)
 						points += self.downWest.query(x, y, range, mode = mode)
 						points += self.downEast.query(x, y, range, mode = mode)
+
+					# append points of this segment which are inside of rectangle to resultlist					
 					points += self.pointsOfSegmentInsideRectangle(x, y, range)
+
+					# return result to quadtree or parentsegment
 					return points
 
 			elif mode == 'Circle':
@@ -211,7 +217,7 @@ class Quadtree():
 			# returns points which are inside of rectangle
 
 			points = []
-			for p in self.points:				
+			for p in self.points:	
 				if  (p.x >= (x - (range)) 
 					and p.x <= (x + (range)) 
 					and p.y >= (y - (range)) 

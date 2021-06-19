@@ -178,7 +178,7 @@ class Quadtree():
 						points += self.upEast.query(x, y, range, mode = mode)
 						points += self.downWest.query(x, y, range, mode = mode)
 						points += self.downEast.query(x, y, range, mode = mode)
-					points += self.pointsInsideRectangle(x, y, range)
+					points += self.pointsOfSegmentInsideRectangle(x, y, range)
 					return points
 
 			elif mode == 'Circle':
@@ -207,15 +207,17 @@ class Quadtree():
 				self.intersects = True
 				return True
 		
-		def pointsInsideRectangle(self, x, y, range):
+		def pointsOfSegmentInsideRectangle(self, x, y, range):
+			# returns points which are inside of rectangle
+
 			points = []
-			for p in self.points:
-				# adds point to list if position is inside of rectangle
+			for p in self.points:				
 				if  (p.x >= (x - (range)) 
-				and p.x <= (x + (range)) 
-				and p.y >= (y - (range)) 
-				and p.y <= (y + (range))):
+					and p.x <= (x + (range)) 
+					and p.y >= (y - (range)) 
+					and p.y <= (y + (range))):
 					points.append(p)
+
 			return points
 
 		def show(self):
@@ -223,6 +225,8 @@ class Quadtree():
 			# draws points and segments
 			p5.stroke(0, 255, 100)
 			p5.stroke_weight(1)
+
+			# draws intersected segments in a different collour
 			if self.intersects:
 				p5.stroke_weight(5)
 				p5.stroke(255,0,0)

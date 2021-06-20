@@ -10,9 +10,10 @@ HEIGHT = 640 * 2
 
 
 class Point():
-	def __init__(self, x_, y_) -> None:
+	def __init__(self, x_, y_, userData_ = None) -> None:
 		self.x = x_
 		self.y = y_
+		self.userData = userData_
 
 
 class Quadtree():
@@ -29,10 +30,16 @@ class Quadtree():
 		self.segment = Quadtree.Segment(self.x, self.y, self.width / 2, self.height / 2, self.level)
 
 		
-	def insert(self, x, y):
+	def insert(self, x, y, userDate = None):
+		start = time.time()
+
 		# adds point to tree
-		point = Point(x, y)
+		point = Point(x, y, userDate)
 		self.segment.insert(point)
+
+		t = int((time.time() - start) * 1000)
+		print(f'Insert point in microsec. {t}')
+
 
 
 	
@@ -42,7 +49,7 @@ class Quadtree():
 		result = self.segment.query(x, y, range, mode = 'Rectangle')
 
 		t = int((time.time() - start) * 1000)
-		print(f'Calculation in microsec. {t}')
+		print(f'Calculation points {len(result)} in microsec. {t}')
 		
 		return result
 
@@ -72,10 +79,10 @@ class Quadtree():
 			self.height = height_
 			self.level = level_ + 1
 
-			self.upWest:Quadtree.Segment = None
-			self.upEast:Quadtree.Segment = None
-			self.downWest:Quadtree.Segment = None
-			self.downEast:Quadtree.Segment = None
+			self.southWest:Quadtree.Segment = None
+			self.southEast:Quadtree.Segment = None
+			self.northWest:Quadtree.Segment = None
+			self.northEast:Quadtree.Segment = None
 
 			self.capacity = 4
 			self.points = []
@@ -127,13 +134,13 @@ class Quadtree():
 			# insert point into childsegment
 			# returns True if point is inside of bounds of child
 			# else False and next child is checked
-			if self.upWest.insert(point):
+			if self.southWest.insert(point):
 				return True
-			elif self.upEast.insert(point):
+			elif self.southEast.insert(point):
 				return True
-			elif self.downWest.insert(point):
+			elif self.northWest.insert(point):
 				return True
-			elif self.downEast.insert(point):
+			elif self.northEast.insert(point):
 				return True
 			else:
 				print('point is in no child', self.children, self.level, self.x, self.y,  point.x, point.y)
@@ -157,10 +164,10 @@ class Quadtree():
 
 		def createChilds(self):
 			# creates childsegments for this segemnt
-			self.upWest   = Quadtree.Segment(x_ = self.x - (self.width / 2), y_ = self.y - (self.height / 2), width_ = self.width / 2, height_ = self.height / 2, level_ = self.level)
-			self.upEast   = Quadtree.Segment(x_ = self.x + (self.width / 2), y_ = self.y - (self.height / 2), width_ = self.width / 2, height_ = self.height / 2, level_ = self.level)
-			self.downWest = Quadtree.Segment(x_ = self.x - (self.width / 2), y_ = self.y + (self.height / 2), width_ = self.width / 2, height_ = self.height / 2, level_ = self.level)
-			self.downEast = Quadtree.Segment(x_ = self.x + (self.width / 2), y_ = self.y + (self.height / 2), width_ = self.width / 2, height_ = self.height / 2, level_ = self.level)
+			self.southWest   = Quadtree.Segment(x_ = self.x - (self.width / 2), y_ = self.y - (self.height / 2), width_ = self.width / 2, height_ = self.height / 2, level_ = self.level)
+			self.southEast   = Quadtree.Segment(x_ = self.x + (self.width / 2), y_ = self.y - (self.height / 2), width_ = self.width / 2, height_ = self.height / 2, level_ = self.level)
+			self.northWest = Quadtree.Segment(x_ = self.x - (self.width / 2), y_ = self.y + (self.height / 2), width_ = self.width / 2, height_ = self.height / 2, level_ = self.level)
+			self.northEast = Quadtree.Segment(x_ = self.x + (self.width / 2), y_ = self.y + (self.height / 2), width_ = self.width / 2, height_ = self.height / 2, level_ = self.level)
 			self.children = True
 			#print('children created')
 
@@ -176,10 +183,10 @@ class Quadtree():
 				else:
 					if self.children == True:
 						# if children exists call recursice query of childsegment and add result list to this result list 
-						points += self.upWest.query(x, y, range, mode = mode)
-						points += self.upEast.query(x, y, range, mode = mode)
-						points += self.downWest.query(x, y, range, mode = mode)
-						points += self.downEast.query(x, y, range, mode = mode)
+						points += self.southWest.query(x, y, range, mode = mode)
+						points += self.southEast.query(x, y, range, mode = mode)
+						points += self.northWest.query(x, y, range, mode = mode)
+						points += self.northEast.query(x, y, range, mode = mode)
 
 					# append points of this segment which are inside of rectangle to resultlist					
 					points += self.pointsOfSegmentInsideRectangle(x, y, range)
@@ -248,10 +255,10 @@ class Quadtree():
 				p5.ellipse(p.x, p.y, 10, 10)
 
 			if self.children:
-				self.upWest.show() 
-				self.upEast.show() 
-				self.downWest.show()
-				self.downEast.show()
+				self.southWest.show() 
+				self.southEast.show() 
+				self.northWest.show()
+				self.northEast.show()
 
 
 	
@@ -262,20 +269,21 @@ qtree = Quadtree(WIDTH, HEIGHT, 4)
 def setup():
 	p5.size(WIDTH, HEIGHT)
 
-	for i in range(100):
+	for i in range(1000):
 		x = p5.random_uniform(-WIDTH/2, WIDTH /2)
 		y = p5.random_uniform(-HEIGHT/2, HEIGHT /2)
 		qtree.insert(x, y)
-
-def draw():
+	
 	p5.translate(WIDTH / 2, HEIGHT / 2)
 	p5.background(0,0,0)
-
-
 	p5.no_fill()
 	p5.stroke_weight(2)
 	p5.stroke(255)
 	qtree.show()
+
+def draw():
+	p5.translate(WIDTH / 2, HEIGHT / 2)
+	p5.background(0,0,0)
 
 
 	x = mouse_x - WIDTH / 2
@@ -290,10 +298,10 @@ def draw():
 
 	if points:
 		for p in points:
-			p5.stroke_weight(5)
-			p5.stroke(0,0,255)
+			p5.stroke_weight(1)
+			p5.stroke(255)
 			p5.fill(100)
-			p5.ellipse(p.x, p.y, 20, 20)
+			p5.ellipse(p.x, p.y, 10, 10)
 
 	if mouse_is_pressed:
 		for i in range(5):

@@ -5,10 +5,6 @@ from p5.core.primitives import rect
 
 import time
 
-WIDTH = 1280 * 2
-HEIGHT = 640 * 2
-
-
 class Point():
 	def __init__(self, x_, y_, userData_ = None) -> None:
 		self.x = x_
@@ -164,10 +160,13 @@ class Quadtree():
 
 		def createChilds(self):
 			# creates childsegments for this segemnt
-			self.southWest   = Quadtree.Segment(x_ = self.x - (self.width / 2), y_ = self.y - (self.height / 2), width_ = self.width / 2, height_ = self.height / 2, level_ = self.level)
-			self.southEast   = Quadtree.Segment(x_ = self.x + (self.width / 2), y_ = self.y - (self.height / 2), width_ = self.width / 2, height_ = self.height / 2, level_ = self.level)
-			self.northWest = Quadtree.Segment(x_ = self.x - (self.width / 2), y_ = self.y + (self.height / 2), width_ = self.width / 2, height_ = self.height / 2, level_ = self.level)
-			self.northEast = Quadtree.Segment(x_ = self.x + (self.width / 2), y_ = self.y + (self.height / 2), width_ = self.width / 2, height_ = self.height / 2, level_ = self.level)
+			# childsegments are width / 2 and heigth / 2
+			w = self.width / 2
+			h = self.height / 2
+			self.southWest = Quadtree.Segment(x_ = self.x - w, y_ = self.y - h, width_ = w, height_ = h, level_ = self.level)
+			self.southEast = Quadtree.Segment(x_ = self.x + w, y_ = self.y - h, width_ = w, height_ = h, level_ = self.level)
+			self.northWest = Quadtree.Segment(x_ = self.x - w, y_ = self.y + h, width_ = w, height_ = h, level_ = self.level)
+			self.northEast = Quadtree.Segment(x_ = self.x + w, y_ = self.y + h, width_ = w, height_ = h, level_ = self.level)
 			self.children = True
 			#print('children created')
 
@@ -261,17 +260,20 @@ class Quadtree():
 				self.northEast.show()
 
 
+mult = 1
+WIDTH = 1280 * mult
+HEIGHT = 640 * mult
+
 	
 qtree = Quadtree(WIDTH, HEIGHT, 4)
 				
-
 
 def setup():
 	p5.size(WIDTH, HEIGHT)
 
 	for i in range(1000):
-		x = p5.random_uniform(-WIDTH/2, WIDTH /2)
-		y = p5.random_uniform(-HEIGHT/2, HEIGHT /2)
+		x = p5.random_uniform(-WIDTH/ 2, WIDTH / 2)
+		y = p5.random_uniform(-HEIGHT/ 2, HEIGHT /2)
 		qtree.insert(x, y)
 	
 	p5.translate(WIDTH / 2, HEIGHT / 2)
@@ -298,18 +300,20 @@ def draw():
 
 	if points:
 		for p in points:
+			# just render points found inside of rect
 			p5.stroke_weight(1)
 			p5.stroke(255)
 			p5.fill(100)
 			p5.ellipse(p.x, p.y, 10, 10)
 
 	if mouse_is_pressed:
+		print('clicked')
+		# add 5 points to tree
 		for i in range(5):
-			print('clicked')
 			x = p5.random_uniform(-30, 30) - (WIDTH / 2)
 			y = p5.random_uniform(-30, 30)- (HEIGHT /2)
 			qtree.insert(mouse_x + x, mouse_y + y)
 
 
 if __name__ == '__main__':
-	p5.run(frame_rate=20)
+	p5.run()
